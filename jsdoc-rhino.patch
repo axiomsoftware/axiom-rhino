@@ -1,0 +1,205 @@
+Index: src/org/mozilla/javascript/FunctionNode.java
+===================================================================
+RCS file: /cvsroot/mozilla/js/rhino/src/org/mozilla/javascript/FunctionNode.java,v
+retrieving revision 1.29
+diff -u -r1.29 FunctionNode.java
+--- src/org/mozilla/javascript/FunctionNode.java 29 Aug 2005 13:25:31 -0000 1.29
++++ src/org/mozilla/javascript/FunctionNode.java 26 Jul 2006 23:16:25 -0000
+@@ -77,7 +77,15 @@
+     public int getFunctionType() {
+         return itsFunctionType;
+     }
++    
++    public void setJSDoc(String s) {
++        this.jsDoc = s;
++    }
++    public String getJSDoc() {
++        return jsDoc;
++    }
+ 
++    String jsDoc = null;
+     String functionName;
+     boolean itsNeedsActivation;
+     int itsFunctionType;
+Index: src/org/mozilla/javascript/Interpreter.java
+===================================================================
+RCS file: /cvsroot/mozilla/js/rhino/src/org/mozilla/javascript/Interpreter.java,v
+retrieving revision 1.307
+diff -u -r1.307 Interpreter.java
+--- src/org/mozilla/javascript/Interpreter.java 19 Nov 2005 22:57:49 -0000 1.307
++++ src/org/mozilla/javascript/Interpreter.java 26 Jul 2006 23:16:27 -0000
+@@ -487,6 +487,7 @@
+         itsData.itsFunctionType = theFunction.getFunctionType();
+         itsData.itsNeedsActivation = theFunction.requiresActivation();
+         itsData.itsName = theFunction.getFunctionName();
++        itsData.jsDoc = theFunction.getJSDoc();
+         if (!theFunction.getIgnoreDynamicScope()) {
+             if (compilerEnv.isUseDynamicScope()) {
+                 itsData.useDynamicScope = true;
+Index: src/org/mozilla/javascript/InterpretedFunction.java
+===================================================================
+RCS file: /cvsroot/mozilla/js/rhino/src/org/mozilla/javascript/InterpretedFunction.java,v
+retrieving revision 1.52
+diff -u -r1.52 InterpretedFunction.java
+--- src/org/mozilla/javascript/InterpretedFunction.java 28 May 2006 17:15:24 -0000 1.52
++++ src/org/mozilla/javascript/InterpretedFunction.java 26 Jul 2006 23:16:25 -0000
+@@ -133,6 +133,17 @@
+         if (idata.itsRegExpLiterals != null) {
+             functionRegExps = createRegExpWraps(cx, scope);
+         }
++        if (idata.jsDoc != null) {
++            defineProperty("__jsdoc__",
++             Context.toString(idata.getJSDoc()),
++             ScriptableObject.DONTENUM);
++            defineProperty("__source__",
++             Context.toString(idata.getSourceName()),
++             ScriptableObject.DONTENUM);
++            defineProperty("__lines__",
++             Context.javaToJS(idata.getLineNumbers(), scope),
++             ScriptableObject.DONTENUM);
++        }
+     }
+ 
+     public String getFunctionName()
+Index: src/org/mozilla/javascript/TokenStream.java
+===================================================================
+RCS file: /cvsroot/mozilla/js/rhino/src/org/mozilla/javascript/TokenStream.java,v
+retrieving revision 1.63
+diff -u -r1.63 TokenStream.java
+--- src/org/mozilla/javascript/TokenStream.java 31 Jul 2005 13:48:46 -0000 1.63
++++ src/org/mozilla/javascript/TokenStream.java 26 Jul 2006 23:16:28 -0000
+@@ -284,6 +284,8 @@
+     final int getLineno() { return lineno; }
+ 
+     final String getString() { return string; }
++    
++    final String getJSDoc() { String s = jsDoc; jsDoc = null; return s; }
+ 
+     final double getNumber() { return number; }
+ 
+@@ -742,6 +744,11 @@
+                 }
+                 if (matchChar('*')) {
+                     boolean lookForSlash = false;
++                    // Marcello: JSDoc patch
++                    boolean potentialJSDoc = true;
++                    boolean inJSDoc = false;
++                    boolean readJSDoc = false;
++                    int jsDocStep = 1; // 0: space, 1: star, 2: space, 3: text
+                     for (;;) {
+                         c = getChar();
+                         if (c == EOF_CHAR) {
+@@ -749,13 +756,47 @@
+                             return Token.ERROR;
+                         } else if (c == '*') {
+                             lookForSlash = true;
++                            if (potentialJSDoc) {
++                                inJSDoc = true;
++                                potentialJSDoc = false;
++                                stringBufferTop = 0;
++                                continue;
++                            }
+                         } else if (c == '/') {
+                             if (lookForSlash) {
++                                if (inJSDoc)
++                                    this.jsDoc = getStringFromBuffer();
+                                 continue retry;
+                             }
+                         } else {
+                             lookForSlash = false;
+                         }
++                        potentialJSDoc = false;
++                        if (inJSDoc) {
++                            // If we hit a newline restart step
++                            if (c=='\n' && jsDocStep>=1) {
++                                jsDocStep = 0;
++                                if (readJSDoc)
++                                    addToString(c);
++                                continue;
++                            } else if (jsDocStep<3) {
++                                // Ignore asterisks if we're in step 0/1
++                                if (c=='*') {
++                                    if (jsDocStep==0)
++                                        jsDocStep=1;
++                                    if (jsDocStep==1)
++                                        continue;
++                                // Ignore spaces in steps 0,1,2
++                                } else if (isJSSpace(c)) {
++                                    if (jsDocStep==1)
++                                        jsDocStep = 2;
++                                    continue;
++                                }  
++                            }
++                            jsDocStep = 3;
++                            addToString(c);
++                            readJSDoc = true;
++                        }
+                     }
+                 }
+ 
+@@ -1367,6 +1408,9 @@
+     // code.
+     private String string = "";
+     private double number;
++    
++    // Marcello: store jsdoc
++    private String jsDoc = null;
+ 
+     private char[] stringBuffer = new char[128];
+     private int stringBufferTop;
+Index: src/org/mozilla/javascript/InterpreterData.java
+===================================================================
+RCS file: /cvsroot/mozilla/js/rhino/src/org/mozilla/javascript/InterpreterData.java,v
+retrieving revision 1.53
+diff -u -r1.53 InterpreterData.java
+--- src/org/mozilla/javascript/InterpreterData.java 30 Aug 2005 10:05:42 -0000 1.53
++++ src/org/mozilla/javascript/InterpreterData.java 26 Jul 2006 23:16:27 -0000
+@@ -102,6 +102,9 @@
+     String encodedSource;
+     int encodedSourceStart;
+     int encodedSourceEnd;
++    
++    // Marcello: Added JSDoc
++    String jsDoc;
+ 
+     int languageVersion;
+ 
+@@ -154,6 +157,11 @@
+         return itsSourceFile;
+     }
+ 
++    public String getJSDoc()
++    {
++        return jsDoc;
++    }
++
+     public boolean isGeneratedScript()
+     {
+         return ScriptRuntime.isGeneratedScript(itsSourceFile);
+Index: src/org/mozilla/javascript/Parser.java
+===================================================================
+RCS file: /cvsroot/mozilla/js/rhino/src/org/mozilla/javascript/Parser.java,v
+retrieving revision 1.104
+diff -u -r1.104 Parser.java
+--- src/org/mozilla/javascript/Parser.java 1 Jun 2006 14:30:19 -0000 1.104
++++ src/org/mozilla/javascript/Parser.java 26 Jul 2006 23:16:28 -0000
+@@ -430,6 +430,9 @@
+     {
+         int syntheticType = functionType;
+         int baseLineno = ts.getLineno();  // line number where source starts
++        
++        // Marcello: JSDoc addition
++        String jsDoc = ts.getJSDoc();
+ 
+         int functionSourceStart = decompiler.markFunctionStart(functionType);
+         String name;
+@@ -476,6 +479,9 @@
+             // of with object.
+             fnNode.itsIgnoreDynamicScope = true;
+         }
++        
++        // Marcello: JSDoc addition
++        fnNode.setJSDoc(jsDoc);
+ 
+         int functionIndex = currentScriptOrFn.addFunction(fnNode);
+  
