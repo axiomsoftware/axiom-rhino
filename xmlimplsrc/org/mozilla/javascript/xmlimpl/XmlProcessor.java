@@ -341,6 +341,12 @@ class XmlProcessor {
                 s.append(' ');
             }
         }
+		if (node instanceof CDATASection){
+			s.append("<![CDATA[");
+			s.append(((CDATASection)node).getData());
+			s.append("]]>");
+			return s.toString();
+		}
         if (node instanceof Text) {
             String data = ((Text)node).getData();
             //    TODO Does Java trim() work same as XMLWhitespace?

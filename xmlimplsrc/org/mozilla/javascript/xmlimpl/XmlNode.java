@@ -829,7 +829,7 @@ class XmlNode {
         };
         static final Filter TEXT = new Filter() {
             boolean accept(Node node) {
-                return node.getNodeType() == Node.TEXT_NODE;
+                return (node.getNodeType() == Node.TEXT_NODE || node.getNodeType() == Node.CDATA_SECTION_NODE);
             }
         };
         static Filter PROCESSING_INSTRUCTION(final XMLName name) {
