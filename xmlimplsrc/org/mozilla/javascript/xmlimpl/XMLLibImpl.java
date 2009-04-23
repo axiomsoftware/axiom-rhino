@@ -325,7 +325,14 @@ public final class XMLLibImpl extends XMLLib implements Serializable {
             }
         }
 
-        Object ns = ScriptRuntime.searchDefaultNamespace(cx);
+        Object ns;
+        try{
+        	ns = ScriptRuntime.searchDefaultNamespace(cx);
+        } catch(IllegalStateException e){
+        	// HACK - sometimes the top level scope isn't around ? -- tmayfield
+        	return namespacePrototype;
+        }
+        
         if (ns == null) {
             return namespacePrototype;
         } else {
