@@ -47,9 +47,9 @@ import org.mozilla.javascript.xml.*;
 class XMLList extends XMLObjectImpl implements Function {
     static final long serialVersionUID = -4543618751670781135L;
 
-    private XmlNode.List _annos;
-    private XMLObjectImpl targetObject = null;
-    private XmlNode.QName targetProperty = null;
+    protected XmlNode.List _annos;
+    protected XMLObjectImpl targetObject = null;
+    protected XmlNode.QName targetProperty = null;
 
     XMLList(XMLLibImpl lib, Scriptable scope, XMLObject prototype) {
         super(lib, scope, prototype);
@@ -91,7 +91,7 @@ class XMLList extends XMLObjectImpl implements Function {
         }
     }
 
-    private void insert(int index, XML xml) {
+    protected void insert(int index, XML xml) {
         if (index < length()) {
             XmlNode.List newAnnoList = new XmlNode.List();
             newAnnoList.add(_annos, 0, index);
@@ -196,7 +196,7 @@ class XMLList extends XMLObjectImpl implements Function {
         return getPropertyList(name);
     }
 
-    private void replaceNode(XML xml, XML with) {
+    protected void replaceNode(XML xml, XML with) {
         xml.replaceWith(with);
     }
 
@@ -294,7 +294,7 @@ class XMLList extends XMLObjectImpl implements Function {
         }
     }
 
-    private XML getXML(XmlNode.List _annos, int index) {
+    protected XML getXML(XmlNode.List _annos, int index) {
         if (index >= 0 && index < length()) {
             return xmlFromNode(_annos.item(index));
         } else {
@@ -360,7 +360,7 @@ class XMLList extends XMLObjectImpl implements Function {
             ? getXmlFromAnnotation(index) : createEmptyXML();
     }
 
-    private void setAttribute(XMLName xmlName, Object value) {
+    protected void setAttribute(XMLName xmlName, Object value) {
         for (int i = 0; i < length(); i++) {
             XML xml = getXmlFromAnnotation(i);
             xml.setAttribute(xmlName, value);
@@ -679,7 +679,7 @@ class XMLList extends XMLObjectImpl implements Function {
         return result;
     }
 
-    private XMLList getPropertyList(XMLName name) {
+    protected XMLList getPropertyList(XMLName name) {
         XMLList propertyList = newXMLList();
         XmlNode.QName qname = null;
 
@@ -699,7 +699,7 @@ class XMLList extends XMLObjectImpl implements Function {
         return propertyList;
     }
 
-    private Object applyOrCall(boolean isApply,
+    protected Object applyOrCall(boolean isApply,
         Context cx, Scriptable scope,
         Scriptable thisObj, Object[] args) {
         String methodName = isApply ? "apply" : "call";

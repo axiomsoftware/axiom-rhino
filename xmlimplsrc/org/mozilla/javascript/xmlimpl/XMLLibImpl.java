@@ -80,7 +80,8 @@ public final class XMLLibImpl extends XMLLib implements Serializable {
     private XMLList xmlListPrototype;
     private Namespace namespacePrototype;
     private QName qnamePrototype;
-
+    private XHTML xhtmlPrototype;
+    
     private XmlProcessor options = new XmlProcessor();
 
     private XMLLibImpl(Scriptable globalScope) {
@@ -106,11 +107,13 @@ public final class XMLLibImpl extends XMLLib implements Serializable {
         xmlListPrototype = newXMLList();
         namespacePrototype = Namespace.create(this.globalScope, null, XmlNode.Namespace.GLOBAL);
         qnamePrototype = QName.create(this, this.globalScope, null, XmlNode.QName.create(XmlNode.Namespace.create(""), ""));
-
+        xhtmlPrototype = newXHTML();
+        
         xmlPrototype.exportAsJSClass(sealed);
         xmlListPrototype.exportAsJSClass(sealed);
         namespacePrototype.exportAsJSClass(sealed);
         qnamePrototype.exportAsJSClass(sealed);
+        xhtmlPrototype.exportAsJSClass(sealed);
     }
 
     /** @deprecated */
@@ -445,6 +448,10 @@ public final class XMLLibImpl extends XMLLib implements Serializable {
 
     XMLList newXMLList() {
         return new XMLList(this, this.globalScope, this.xmlListPrototype);
+    }
+    
+    XHTML newXHTML() {
+        return new XHTML(this, this.globalScope, this.xhtmlPrototype);
     }
 
     final XMLList newXMLListFrom(Object inputObject) {

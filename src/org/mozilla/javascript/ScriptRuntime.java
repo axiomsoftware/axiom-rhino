@@ -155,6 +155,7 @@ public class ScriptRuntime {
         "XMLList",       "(xml)",
         "Namespace",     "(xml)",
         "QName",         "(xml)",
+        "XHTML",         "(xml)",
     };
 
     private static final Object LIBRARY_SCOPE_KEY = new Object();

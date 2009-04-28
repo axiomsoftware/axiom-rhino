@@ -1959,6 +1959,8 @@ public abstract class ScriptableObject implements Scriptable, Serializable,
             LazilyLoadedCtor initializer = (LazilyLoadedCtor)value;
             try {
                 initializer.init();
+            } catch(Exception e){
+            	e.printStackTrace();
             } finally {
                 value = initializer.getValue();
                 slot.value = value;

@@ -70,6 +70,7 @@ public final class LazilyLoadedCtor implements java.io.Serializable {
         this.sealed = sealed;
         this.state = STATE_BEFORE_INIT;
 
+        //System.out.println("adding "+propertyName+" -> "+className+ " to scope");
         scope.addLazilyInitializedValue(propertyName, 0, this,
                                         ScriptableObject.DONTENUM);
     }
@@ -77,6 +78,7 @@ public final class LazilyLoadedCtor implements java.io.Serializable {
     void init()
     {
         synchronized (this) {
+        	System.out.println("Entering init::"+propertyName);
             if (state == STATE_INITIALIZING)
                 throw new IllegalStateException(
                     "Recursive initialization for "+propertyName);
@@ -87,6 +89,9 @@ public final class LazilyLoadedCtor implements java.io.Serializable {
                 Object value = Scriptable.NOT_FOUND;
                 try {
                     value = buildValue();
+                } catch(Exception e){
+                	System.out.println("Error in init:: "+propertyName);
+                	e.printStackTrace();
                 } finally {
                     initializedValue = value;
                     state = STATE_WITH_VALUE;
@@ -104,7 +109,7 @@ public final class LazilyLoadedCtor implements java.io.Serializable {
 
     private Object buildValue()
     {
-        Class cl = Kit.classOrNull(className);
+    	Class cl = Kit.classOrNull(className);
         if (cl != null) {
             try {
                 Object value = ScriptableObject.buildClassCtor(scope, cl,
@@ -122,9 +127,13 @@ public final class LazilyLoadedCtor implements java.io.Serializable {
                     throw (RuntimeException)target;
                 }
             } catch (RhinoException ex) {
+            	ex.printStackTrace();
             } catch (InstantiationException ex) {
+            	ex.printStackTrace();
             } catch (IllegalAccessException ex) {
+            	ex.printStackTrace();
             } catch (SecurityException ex) {
+            	ex.printStackTrace();
             }
         }
         return Scriptable.NOT_FOUND;
