@@ -70,7 +70,6 @@ public final class LazilyLoadedCtor implements java.io.Serializable {
         this.sealed = sealed;
         this.state = STATE_BEFORE_INIT;
 
-        //System.out.println("adding "+propertyName+" -> "+className+ " to scope");
         scope.addLazilyInitializedValue(propertyName, 0, this,
                                         ScriptableObject.DONTENUM);
     }
@@ -78,7 +77,6 @@ public final class LazilyLoadedCtor implements java.io.Serializable {
     void init()
     {
         synchronized (this) {
-        	System.out.println("Entering init::"+propertyName);
             if (state == STATE_INITIALIZING)
                 throw new IllegalStateException(
                     "Recursive initialization for "+propertyName);

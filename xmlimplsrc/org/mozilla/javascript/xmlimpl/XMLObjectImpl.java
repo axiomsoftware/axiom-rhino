@@ -90,11 +90,11 @@ abstract class XMLObjectImpl extends XMLObject {
         return node.getXml();
     }
 
-    final XMLList newXMLList() {
+    XMLList newXMLList() {
         return lib.newXMLList();
     }
 
-    final XMLList newXMLListFrom(Object o) {
+    XMLList newXMLListFrom(Object o) {
         return lib.newXMLListFrom(o);
     }
 

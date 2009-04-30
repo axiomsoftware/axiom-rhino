@@ -454,9 +454,15 @@ public final class XMLLibImpl extends XMLLib implements Serializable {
         return new XHTML(this, this.globalScope, this.xhtmlPrototype);
     }
 
+    final XMLList newXHTMLFrom(Object inputObject){
+    	return buildNewXMLListWith(inputObject, newXHTML());	
+    }
+    
     final XMLList newXMLListFrom(Object inputObject) {
-        XMLList rv = newXMLList();
+    	return buildNewXMLListWith(inputObject, newXMLList());
+    }
 
+    final XMLList buildNewXMLListWith(Object inputObject, XMLList rv){
         if (inputObject == null || inputObject instanceof Undefined) {
             return rv;
         } else if (inputObject instanceof XML) {
