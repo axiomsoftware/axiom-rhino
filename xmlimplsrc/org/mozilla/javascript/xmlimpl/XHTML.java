@@ -33,11 +33,23 @@ public class XHTML extends XMLList implements Function{
             return lib.newXHTML();
     }
     
-    public String toXMLString(){
-    	return super.toXMLString().replaceAll("&amp;", "&");
-    }
-    
     XMLList newXMLList(){
     	return lib.newXHTML();
+    }
+    
+	XmlProcessor getProcessor() {
+        return lib.getXHTMLProcessor();
+    }
+	
+    String toXMLString() {
+        StringBuffer sb = new StringBuffer();
+        XmlProcessor processor = getProcessor();
+        for (int i=0; i<length(); i++) {
+            if (getProcessor().isPrettyPrinting() && i != 0) {
+                sb.append('\n');
+            }
+            sb.append(_annos.item(i).ecmaToXMLString(processor));
+        }
+        return sb.toString().replaceAll("&amp;", "&");
     }
 }

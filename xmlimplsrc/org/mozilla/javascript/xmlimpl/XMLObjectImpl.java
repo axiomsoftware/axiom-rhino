@@ -98,7 +98,7 @@ abstract class XMLObjectImpl extends XMLObject {
         return lib.newXMLListFrom(o);
     }
 
-    final XmlProcessor getProcessor() {
+    XmlProcessor getProcessor() {
         return lib.getProcessor();
     }
 

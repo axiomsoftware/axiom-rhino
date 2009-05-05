@@ -46,17 +46,17 @@ import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXParseException;
 
 class XmlProcessor {
-    private boolean ignoreComments;
-    private boolean ignoreProcessingInstructions;
-    private boolean ignoreWhitespace;
-    private boolean prettyPrint;
-    private int prettyIndent;
+    protected boolean ignoreComments;
+    protected boolean ignoreProcessingInstructions;
+    protected boolean ignoreWhitespace;
+    protected boolean prettyPrint;
+    protected int prettyIndent;
 
-    private javax.xml.parsers.DocumentBuilderFactory dom;
-    private javax.xml.transform.TransformerFactory xform;
+    protected javax.xml.parsers.DocumentBuilderFactory dom;
+    protected javax.xml.transform.TransformerFactory xform;
 
 
-    private static class RhinoSAXErrorHandler implements ErrorHandler {
+    protected static class RhinoSAXErrorHandler implements ErrorHandler {
 
         private void throwError(SAXParseException e) {
             throw ScriptRuntime.constructError("TypeError", e.getMessage(),
@@ -130,7 +130,7 @@ class XmlProcessor {
         return prettyIndent;
     }
 
-    private String toXmlNewlines(String rv) {
+    protected String toXmlNewlines(String rv) {
         StringBuffer nl = new StringBuffer();
         for (int i=0; i<rv.length(); i++) {
             if (rv.charAt(i) == '\r') {
@@ -147,11 +147,11 @@ class XmlProcessor {
         return nl.toString();
     }
 
-    private javax.xml.parsers.DocumentBuilderFactory newDomFactory() {
+    protected javax.xml.parsers.DocumentBuilderFactory newDomFactory() {
         return dom;
     }
 
-    private void addProcessingInstructionsTo(java.util.Vector v, Node node) {
+    protected void addProcessingInstructionsTo(java.util.Vector v, Node node) {
         if (node instanceof ProcessingInstruction) {
             v.add(node);
         }
@@ -162,7 +162,7 @@ class XmlProcessor {
         }
     }
 
-    private void addCommentsTo(java.util.Vector v, Node node) {
+    protected void addCommentsTo(java.util.Vector v, Node node) {
         if (node instanceof Comment) {
             v.add(node);
         }
@@ -173,7 +173,7 @@ class XmlProcessor {
         }
     }
 
-    private void addTextNodesToRemoveAndTrim(java.util.Vector toRemove, Node node) {
+    protected void addTextNodesToRemoveAndTrim(java.util.Vector toRemove, Node node) {
         if (node instanceof Text) {
             Text text = (Text)node;
             boolean BUG_369394_IS_VALID = false;
@@ -265,7 +265,7 @@ class XmlProcessor {
     }
 
     //    TODO    Cannot remember what this is for, so whether it should use settings or not
-    private String toString(Node node) {
+    protected String toString(Node node) {
         javax.xml.transform.dom.DOMSource source = new javax.xml.transform.dom.DOMSource(node);
         java.io.StringWriter writer = new java.io.StringWriter();
         javax.xml.transform.stream.StreamResult result = new javax.xml.transform.stream.StreamResult(writer);
@@ -273,7 +273,7 @@ class XmlProcessor {
             javax.xml.transform.Transformer transformer = xform.newTransformer();
             transformer.setOutputProperty(javax.xml.transform.OutputKeys.OMIT_XML_DECLARATION, "yes");
             transformer.setOutputProperty(javax.xml.transform.OutputKeys.INDENT, "no");
-            transformer.setOutputProperty(javax.xml.transform.OutputKeys.METHOD, "html");
+            transformer.setOutputProperty(javax.xml.transform.OutputKeys.METHOD, "xml");
             transformer.transform(source, result);
         } catch (javax.xml.transform.TransformerConfigurationException ex) {
             //    TODO    How to handle these runtime errors?
@@ -318,21 +318,21 @@ class XmlProcessor {
         return (begin < end) ? elementText.substring(begin, end) : "";
     }
 
-    private String escapeElementValue(String s) {
+    protected String escapeElementValue(String s) {
         //    TODO    Check this
         return escapeTextValue(s);
     }
 
-    private String elementToXmlString(Element element) {
+    protected String elementToXmlString(Element element) {
         //    TODO    My goodness ECMA is complicated (see 10.2.1).  We'll try this first.
-        Element copy = (Element)element.cloneNode(true);
+    	Element copy = (Element)element.cloneNode(true);
         if (prettyPrint) {
             beautifyElement(copy, 0);
         }
         return toString(copy);
     }
 
-    final String ecmaToXmlString(Node node) {
+    String ecmaToXmlString(Node node) {
         //    See ECMA 357 Section 10.2.1
         StringBuffer s = new StringBuffer();
         int indentLevel = 0;
@@ -372,7 +372,7 @@ class XmlProcessor {
         return s.toString();
     }
 
-    private void beautifyElement(Element e, int indent) {
+    protected void beautifyElement(Element e, int indent) {
         StringBuffer s = new StringBuffer();
         s.append('\n');
         for (int i=0; i<indent; i++) {

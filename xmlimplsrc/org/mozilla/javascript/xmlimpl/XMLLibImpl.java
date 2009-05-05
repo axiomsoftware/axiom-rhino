@@ -83,6 +83,7 @@ public final class XMLLibImpl extends XMLLib implements Serializable {
     private XHTML xhtmlPrototype;
     
     private XmlProcessor options = new XmlProcessor();
+    private XHTMLProcessor xhtmlProcessor = new XHTMLProcessor();
 
     private XMLLibImpl(Scriptable globalScope) {
         this.globalScope = globalScope;
@@ -100,6 +101,10 @@ public final class XMLLibImpl extends XMLLib implements Serializable {
 
     XmlProcessor getProcessor() {
         return options;
+    }
+    
+    XmlProcessor getXHTMLProcessor() {
+        return xhtmlProcessor;
     }
 
     private void exportToScope(boolean sealed) {
