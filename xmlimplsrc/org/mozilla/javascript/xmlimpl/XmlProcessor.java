@@ -350,8 +350,7 @@ class XmlProcessor {
         if (node instanceof Text) {
             String data = ((Text)node).getData();
             //    TODO Does Java trim() work same as XMLWhitespace?
-            String v = (prettyPrint) ? data.trim() : data;
-            s.append(escapeElementValue(v));
+            s.append(escapeElementValue(data));
             return s.toString();
         }
         if (node instanceof Attr) {
