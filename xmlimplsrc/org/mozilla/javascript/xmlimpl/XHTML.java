@@ -61,7 +61,7 @@ public class XHTML extends XMLList implements Function{
         return sb.toString();
 	}
 	
-    String toXMLString() {
+    public String toXMLString() {
         return this.toString().replaceAll("&amp;", "&");
     }
 }
