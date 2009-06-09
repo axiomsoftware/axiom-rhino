@@ -29,7 +29,7 @@ public class XHTML extends XMLList implements Function{
             	Object arg0 = args[0];
             	if(arg0 instanceof String || arg0 instanceof Scriptable && ((Scriptable) arg0).getClassName().equals("String")){
             		// escape entities and strip leading declarations and doctypes
-            		arg0 = arg0.toString().replaceAll("&", "&amp;").replaceFirst("^\\s*<[\\!\\?][^>]*>", "");
+            		arg0 = arg0.toString().replaceAll("&", "&amp;").replaceFirst("^\\s*<(\\!DOCTYPE|\\?)[^>]*>", "");
             	}
             	return lib.newXHTMLFrom(arg0);
             }
