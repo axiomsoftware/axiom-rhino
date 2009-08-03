@@ -44,7 +44,7 @@ package org.mozilla.javascript.xmlimpl;
 import org.mozilla.javascript.*;
 import org.mozilla.javascript.xml.*;
 
-class XMLList extends XMLObjectImpl implements Function {
+public class XMLList extends XMLObjectImpl implements Function {
     static final long serialVersionUID = -4543618751670781135L;
 
     protected XmlNode.List _annos;
@@ -632,7 +632,7 @@ class XMLList extends XMLObjectImpl implements Function {
         }
     }
 
-    String toXMLString() {
+    public String toXMLString() {
         //    See ECMA 10.2.1
         StringBuffer sb = new StringBuffer();
 

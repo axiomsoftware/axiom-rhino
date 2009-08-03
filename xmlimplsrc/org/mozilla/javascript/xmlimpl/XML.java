@@ -44,7 +44,7 @@ package org.mozilla.javascript.xmlimpl;
 import org.mozilla.javascript.*;
 import org.mozilla.javascript.xml.XMLObject;
 
-class XML extends XMLObjectImpl {
+public class XML extends XMLObjectImpl {
     static final long serialVersionUID = -630969919086449092L;
 
     private XmlNode node;
@@ -703,7 +703,7 @@ class XML extends XMLObjectImpl {
         return ecmaToString();
     }
 
-    String toXMLString() {
+    public String toXMLString() {
         return this.node.ecmaToXMLString(getProcessor());
     }
 
